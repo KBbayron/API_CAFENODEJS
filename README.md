@@ -1,11 +1,10 @@
 <center><h1>API proyecto</h1></center>
 
-
-## Crea una carpeta de y trabajo dentro ella en tu editor de codigo de preferencia
+# Crea una carpeta de y trabajo dentro ella en tu editor de codigo de preferencia
 
 ## Crear packaje.json
 1. npm init
-Presiona "enter" para cada solicitud y digita "yes" al final
+<p>Presiona "enter" para cada solicitud y digita "yes" al final<p>
 
 ## Instalar Express con modulo de variables de entorno
 2. npm install --save express mysql dotenv cors
