@@ -59,7 +59,7 @@ var transporter = nodemailer.createTransport({
     }
 })
 
-Router.post('/forgot/password', (req, res)=>{
+Router.post('/forgotPassword', (req, res)=>{
     const user = req.body;
     query = "select email, password from user where email=?";
     connection.query(query, [user.email, (err,results)=>{
@@ -71,10 +71,17 @@ Router.post('/forgot/password', (req, res)=>{
                     from: process.env.EMAIL,
                     to: results[0].email,
                     subject: 'Recuperacion de contraseña',
-                    html: <p>
-                        Tu contrasena es 
-                    </p>
+                    html: '<p><b>Sus datos de acceso para la gestión de la cafetería</b><br><b>Email:</b>'+results[0].email+ '<br><b>Password: </b>'+results[0].password+'<br> <a herf= "http://localhost:4200/user/loging"></a>Haz click aqui para recuperar</p>'
                 };
+                transporter.sendMail(mailOptions, function(error, info){
+                    if (error) {
+                        console.log(error);
+                        return res.status(500).json({message: 'Error al enviar el correo'});
+                    } else {
+                        console.log('Email sent:'+ info.response);
+                        return res.status(200).json({message: 'La constrasena se envio con exito'});
+                    }
+                });
             }
         } else {
             return res.status(500).json(err);
