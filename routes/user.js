@@ -5,6 +5,9 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+var auth = require('../services/authentication');
+var checkRole = require('../services/checkRole');
+
 
 router.post('/singup',(req, res) => {
     let user = req.body;
@@ -59,7 +62,7 @@ var transporter = nodemailer.createTransport({
     }
 })
 
-Router.post('/forgotPassword', (req, res)=>{
+router.post('/forgotPassword', (req, res)=>{
     const user = req.body;
     query = "select email, password from user where email=?";
     connection.query(query, [user.email, (err,results)=>{
@@ -87,6 +90,40 @@ Router.post('/forgotPassword', (req, res)=>{
             return res.status(500).json(err);
         }
     }])
+})
+
+router.get('/get',auth.authenticateToken, checkRole.checkRole,(req,res) => {
+    var query = "SELECT id, name, email, contactNumber, satus from user where role='user'";
+    connection.query(query, (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    })
+})
+
+router.patch('update', auth.authenticateToken,(req,res)=>{
+    let user = req.body;
+    var query = "UPDATE user SET status=? WHERE id=?";
+    connection.query(query,[user.status, user.id],(err, results)=>{
+        if(!err){
+            if(results.affectedRows == 0){
+                return res.status(404).json({message:"El usuario no se encontró"});
+            }
+            return res.status(200).json({message: "Usuario actualizado"});
+        } else {
+            return res.status(500).json(err); 
+        }
+    })
+})
+
+get.get('/checkToken',auth.authenticateToken,(req, res) =>{
+    return res.json(200).json({message: "true"});
+})
+
+get.get('/changePassword', (req, res) =>{
+    
 })
 
 module.exports = router;

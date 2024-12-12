@@ -18,7 +18,3 @@
 ## Generar Crypto para el achivo .env 
 5. node
 6. require('crypto').randomBytes(64).toString('hex')
-
-
-
-
