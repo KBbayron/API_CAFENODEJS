@@ -103,7 +103,7 @@ router.get('/get',auth.authenticateToken, checkRole.checkRole,(req,res) => {
     })
 })
 
-router.patch('update', auth.authenticateToken,(req,res)=>{
+router.patch('/update', auth.authenticateToken,checkRole.checkRole,(req,res)=>{
     let user = req.body;
     var query = "UPDATE user SET status=? WHERE id=?";
     connection.query(query,[user.status, user.id],(err, results)=>{
@@ -118,12 +118,34 @@ router.patch('update', auth.authenticateToken,(req,res)=>{
     })
 })
 
-get.get('/checkToken',auth.authenticateToken,(req, res) =>{
-    return res.json(200).json({message: "true"});
-})
+router.get('/checkToken', auth.authenticateToken, (req, res) => {
+    return res.status(200).json({ message: "true" });  
+});
 
-get.get('/changePassword', (req, res) =>{
-    
+router.post('/changePassword',auth.authenticateToken,(req, res) =>{
+    const user = req.body;
+    const email = res.locals.email;
+    query = "SELECT * FROM user where email=? and password=?";
+    connection.query(query,[email, user.oldPassword], (err, results) => {
+        if (!err) {
+            if (results.length <= 0){
+                return res.status(400).json({message: 'Contraseña incorrecta'});
+            } else if (results[0].password === user.oldPassword){
+                query = "update user set password=? where email=?"
+                connection.query(query,[user.newPassword, email], (err, result) => {
+                    if (!err){
+                        return res.status(200).json({message: 'Contraseña actualizada correctamente'});
+                    } else {
+                        return res.status(500).json(err);
+                    }
+                });
+            } else {
+                return res.status(400).json({message: 'Algo salio mal. Intenta de nuevo'});
+            }
+        }else {
+            return res.status(500).json(err);
+        }
+    })
 })
 
 module.exports = router;

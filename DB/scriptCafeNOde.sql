@@ -17,15 +17,31 @@ CREATE TABLE category (
     `name` VARCHAR(250) NOT NULL
 ) ENGINE = InnoDB;
 
-
 create TABLE product(
     id INT PRIMARY KEY AUTO_INCREMENT,
     `name` VARCHAR(255),
-    category INT NOT NULL,
-    description varchar(255),
+    categoryId INT NOT NULL,
+    `description` varchar(255),
     price integer,
-    `status` varchar(20)
+    `status` varchar(20),
+    FOREIGN KEY (categoryId) REFERENCES category(id)
 )ENGINE = InnoDB;
+
+INSERT INTO category (`name`) 
+VALUES 
+    ('Categoría 1'),
+    ('Categoría 2'),
+    ('Categoría 3'),
+    ('Categoría 4'),
+    ('Categoría 5');
+
+INSERT INTO product 
+    (`name`, categoryId, `description`, price, `status`) 
+VALUES 
+    ('Producto 1', 1, 'Descripción del producto 1', 100, 'activo'),
+    ('Producto 2', 2, 'Descripción del producto 2', 150, 'activo'),
+    ('Producto 3', 1, 'Descripción del producto 3', 200, 'inactivo');
+
 
 INSERT INTO user 
     (`name`, contactNumber, email, `password`, `status`, `role`)
@@ -39,4 +55,4 @@ VALUES
     ('Pedro Díaz', '555-3333', 'pedro.diaz@email.com', 'password123', 'active', 'user'),
     ('Laura Fernández', '555-4444', 'laura.fernandez@email.com', 'password456', 'active', 'user'),
     ('José García', '555-5555', 'jose.garcia@email.com', 'password789', 'active', 'admin'),
-    ('Elena Pérez', '555-6666', 'elena.perez@email.com', 'password123', 'active', 'user');
+    ('Elena Pérez', '555-6666', 'elena.perez@email.com', 'passwordABC', 'active', 'user');
