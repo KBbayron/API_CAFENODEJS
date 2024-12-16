@@ -27,6 +27,18 @@ create TABLE product(
     FOREIGN KEY (categoryId) REFERENCES category(id)
 )ENGINE = InnoDB;
 
+create TABLE bill(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    uuid varchar(255) NOT NULL,
+    `name` varchar(255) NOT NULL,
+    email varchar(255) NOT NULL,
+    contactNumber varchar(255) NOT,
+    paymentMethod varchar(255) NOT NULL,
+    `total` INT NOT NULL,
+    productDetails JSON NOT NULL,
+    createdBy varchar(255) NOT NULL
+)ENGINE = InnoDB;
+
 INSERT INTO category (`name`) 
 VALUES 
     ('Categoría 1'),

@@ -98,4 +98,20 @@ router.delete('/delete/:id', auth.authenticateToken, checkRole.checkRole, (req, 
     });
 });
 
+router. patch('/updateStatus', auth.authenticateToken, checkRole.checkRole, (req , res,next) => {
+    let user = req. body;
+    var query = "update product set status=? where id=?" ;
+    connection. query (query, [user. status, user. id] , (err, results)=>{
+        if (!erro){
+            if (results.affectedRows == 0 ){
+                return res.status(404).json({ message: "El producto no se encontró" });
+            }
+            return res.status(200).json({ message: "Producto actualizado" });
+        } else {
+            return res.status(500).json(err);
+        }
+
+    })
+})
+
 module.exports = router;
