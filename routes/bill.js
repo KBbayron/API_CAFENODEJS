@@ -6,6 +6,9 @@ let pdf = require('html-pdf');
 let path = require('path');
 var uuid = require('uuid');
 var auth = require('../services/authentication');
+const fs = require('fs');
+console.log(fs);
+
 
 router.post('/generateReport', auth.authenticateToken, (req, res, next) => {
     const generatedUuid = uuid.v1(); 
@@ -67,5 +70,72 @@ router.post('/generateReport', auth.authenticateToken, (req, res, next) => {
         }
     });
 });
+
+router.post('/getPdf', auth.authenticateToken,function(req,res){
+    const orderDetails = req.body;
+    const pdfPath = './generated_pdf/'+orderDetails.uuid+'.pdf';
+    if (fs.existsSync(pdfPath)) {
+        res.contentType("application/pdf");
+        fs.createReadStream(pdfPath).pipe(res);
+    } else{
+        var productDetailsReport = JSON.parse(orderDetails.productDetails);
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: "Database error", details: err });
+        } else {
+            // Renderizar la vista ejs
+            ejs.renderFile(path.join(__dirname, '', "report.ejs"), {
+                productDetails: productDetailsReport,
+                name: orderDetails.name,
+                email: orderDetails.email,
+                contactNumber: orderDetails.contactNumber,
+                paymentMethod: orderDetails.paymentMethod,
+                totalAmount: orderDetails.totalAmount
+            }, (err, html) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ error: "Error rendering PDF", details: err });
+                } else {
+                    // Crear el archivo PDF
+                    pdf.create(html).toFile('./generated_pdf/' + orderDetails.uuid + ".pdf", function (err, data) {
+                        if (err) {
+                            console.log(err);
+                            return res.status(500).json({ error: "Error generating PDF", details: err });
+                        } else {
+                            // Responder con el UUID generado
+                            return res.status(200).json({ uuid: generatedUuid });
+                        }
+                    });
+                }
+            });
+        }
+    }
+})
+
+router.get('/getBills', auth.authenticateToken, (req, res, next) => {
+    var query = "SELECT * FROM bill order by id DESC";
+    connection.query(query, (err, results) => {
+        if (!err) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(500).json(err);
+        }
+    })
+})
+
+router.delete('/delete/:id', auth.authenticateToken,(req, res)=> {
+    const id = req.params.id;
+    const query = "DELETE FROM bill WHERE id =?";
+    connection.query(query, [id], (err, results) => {
+        if (!err) {
+            if(results.affectedRows == 0){
+                return res.status(404).json({ message: "La factura no se encontró" });
+            }
+            return res.status(200).json({ message: "Factura eliminada exitosamente" });
+        } else {
+            return res.status(500).json(err);
+        }
+    });
+})
 
 module.exports = router;
