@@ -1,19 +1,30 @@
-
 const express = require('express');
 const connection = require('../connection'); 
 const router = express.Router(); 
 let ejs = require('ejs');
 let pdf = require('html-pdf');
 let path = require('path');
-var fs = require('fs');
 var uuid = require('uuid');
 var auth = require('../services/authentication');
 
 router.post('/generateReport', auth.authenticateToken, (req, res, next) => {
     const generatedUuid = uuid.v1(); 
     const orderDetails = req.body;
-    var productDetailsReport = JSON.parse(orderDetails.productDetails);
-    var query = "INSERT INTO bill (name, uuid, email, contactNumber, paymentMethod, total, productDetails, createdBy) VALUES (?,?,?,?,?,?,?,?)"; 
+
+    // Verificar que productDetails es un JSON válido
+    let productDetailsReport;
+    try {
+        productDetailsReport = typeof orderDetails.productDetails === "string" 
+            ? JSON.parse(orderDetails.productDetails) 
+            : orderDetails.productDetails;
+    } catch (error) {
+        return res.status(400).json({ error: "Invalid productDetails JSON" });
+    }
+
+    // Convertir productDetails a string para insertarlo en la base de datos
+    const productDetailsString = JSON.stringify(productDetailsReport);
+
+    const query = "INSERT INTO bill (name, uuid, email, contactNumber, paymentMethod, total, productDetails, createdBy) VALUES (?,?,?,?,?,?,?,?)"; 
     connection.query(query, [
         orderDetails.name, 
         generatedUuid,
@@ -21,34 +32,38 @@ router.post('/generateReport', auth.authenticateToken, (req, res, next) => {
         orderDetails.contactNumber, 
         orderDetails.paymentMethod, 
         orderDetails.totalAmount, 
-        orderDetails.productDetails,
+        productDetailsString, 
         res.locals.email
-    ], (err, results) => {
-        if (!err) {
-            // Renderizar el reporte usando ejs
-            ejs.render(path.join(__dirname, '', "report.ejs"), {
+    ], (err) => {     // Eliminamos `results` si no se usa
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: "Database error", details: err });
+        } else {
+            // Renderizar la vista ejs
+            ejs.renderFile(path.join(__dirname, '', "report.ejs"), {
                 productDetails: productDetailsReport,
                 name: orderDetails.name,
                 email: orderDetails.email,
                 contactNumber: orderDetails.contactNumber,
                 paymentMethod: orderDetails.paymentMethod,
                 totalAmount: orderDetails.totalAmount
-            }, (err, results) => {
+            }, (err, html) => {
                 if (err) {
-                    return res.status(500).json(err);
+                    console.log(err);
+                    return res.status(500).json({ error: "Error rendering PDF", details: err });
                 } else {
-                    pdf.create(results).toFile('./generated_pdf/'+generatedUuid+".pdf", function (err, data) {
+                    // Crear el archivo PDF
+                    pdf.create(html).toFile('./generated_pdf/' + generatedUuid + ".pdf", function (err, data) {
                         if (err) {
                             console.log(err);
-                            return res.status(500).json(err);
+                            return res.status(500).json({ error: "Error generating PDF", details: err });
                         } else {
+                            // Responder con el UUID generado
                             return res.status(200).json({ uuid: generatedUuid });
                         }
                     });
                 }
             });
-        } else {
-            return res.status(500).json(err);
         }
     });
 });

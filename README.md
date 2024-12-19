@@ -22,3 +22,7 @@
 ## Instalar dependencias para generar plantillas HTML dinámicas (EJS), convertir HTML a archivos PDF (html-pdf), manejar rutas de archivos (path) y generar identificadores únicos (uuid) en un proyecto Node.js.
 7. npm install ejs html-pdf path uuid
 
+npm install -g phantomjs-prebuilt
+npm install puppeteer
+
+

@@ -32,7 +32,7 @@ create TABLE bill(
     uuid varchar(255) NOT NULL,
     `name` varchar(255) NOT NULL,
     email varchar(255) NOT NULL,
-    contactNumber varchar(255) NOT,
+    contactNumber varchar(255) NOT NULL,
     paymentMethod varchar(255) NOT NULL,
     `total` INT NOT NULL,
     productDetails JSON NOT NULL,
