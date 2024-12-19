@@ -38,6 +38,20 @@ router. get( '/details' , auth.authenticateToken, (req, res, next)=>{
             return res.status(500).json(err);
         }
     })
+    var query = "SELECT count(id) as billCount from bill";
+    connection.query(query, (err, results) => {
+        if (!err) {
+            billCount = results[0].billCount;
+            var data = {
+                category: categoryCount,
+                product: productCount,
+                bill: billCount
+            }
+            return res.status(200).json(data);
+        } else {
+            return res.status(500).json(err);
+        }
+    })
 })
 
 
