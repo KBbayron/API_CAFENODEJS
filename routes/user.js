@@ -78,7 +78,6 @@ router.post('/forgotPassword', (req, res)=>{
                 };
                 transporter.sendMail(mailOptions, function(error, info){
                     if (error) {
-                        console.log(error);
                         return res.status(500).json({message: 'Error al enviar el correo'});
                     } else {
                         console.log('Email sent:'+ info.response);

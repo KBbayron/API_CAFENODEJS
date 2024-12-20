@@ -7,7 +7,7 @@ let path = require('path');
 var uuid = require('uuid');
 var auth = require('../services/authentication');
 const fs = require('fs');
-console.log(fs);
+
 
 
 router.post('/generateReport', auth.authenticateToken, (req, res, next) => {
